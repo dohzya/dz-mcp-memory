@@ -1,7 +1,6 @@
 import { z } from "zod";
 import type { MCPRequest, MCPResponse, MCPErrorResponse } from "../types/mcp.ts";
-import { MCPRequestSchema } from "../types/mcp.ts";
-import { DomainError, ValidationError, AuthenticationError } from "../types/mcp.ts";
+import { MCPRequestSchema, DomainError, ValidationError, AuthenticationError } from "../types/mcp.ts";
 import * as log from "@std/log";
 
 /**
@@ -131,7 +130,7 @@ export function parseSearchParams(params: Record<string, unknown>): {
   readonly sortBy?: "relevance" | "date" | "access" | "priority";
   readonly sortOrder?: "asc" | "desc";
 } {
-  const result: any = {};
+  const result: Record<string, unknown> = {};
 
   if (typeof params.query === "string") {
     result.query = params.query;
@@ -193,8 +192,15 @@ export function parseMemorizeParams(params: Record<string, unknown>): {
     throw new ValidationError("Text parameter is required and must be a non-empty string");
   }
 
-  const result: any = {
+  const result = {
     text: params.text.trim(),
+  } as {
+    text: string;
+    tags?: readonly string[];
+    context?: string;
+    source?: string;
+    priority?: number;
+    category?: string;
   };
 
   if (Array.isArray(params.tags)) {
@@ -229,7 +235,12 @@ export function parseReorganizeParams(params: Record<string, unknown>): {
   readonly optimizeStorage?: boolean;
   readonly maxMemories?: number;
 } {
-  const result: any = {};
+  const result = {} as {
+    mergeSimilarTags?: boolean;
+    cleanupOldMemories?: boolean;
+    optimizeStorage?: boolean;
+    maxMemories?: number;
+  };
 
   if (typeof params.mergeSimilarTags === "boolean") {
     result.mergeSimilarTags = params.mergeSimilarTags;
@@ -276,4 +287,4 @@ export function logMCPResponse(response: MCPResponse): void {
       resultKeys: Object.keys(response.result),
     });
   }
-} 
+}

@@ -1,6 +1,6 @@
-import type { ToolRegistry } from "./types.ts";
+import type { ToolRegistry, MCPResponse } from "./types.ts";
 import { validateMCPRequest, createErrorResponse, createSuccessResponse, logMCPRequest, logMCPResponse } from "./utils.ts";
-import { ValidationError, NotFoundError } from "./types.ts";
+import { DomainError } from "./types.ts";
 import * as log from "@std/log";
 
 /**
@@ -16,7 +16,7 @@ export class MCPDispatcher {
     try {
       // Validate request format
       const mcpRequest = validateMCPRequest(request);
-      
+
       // Log request for debugging
       logMCPRequest(mcpRequest);
 
@@ -32,24 +32,24 @@ export class MCPDispatcher {
 
       // Create success response
       const response = createSuccessResponse(mcpRequest.id, result);
-      
+
       // Log response for debugging
       logMCPResponse(response);
-      
+
       return response;
     } catch (error) {
       log.error("MCP request processing failed", { error: (error as Error).message });
-      
+
       // Convert to MCP error response
-      const domainError = error instanceof DomainError 
-        ? error 
+      const domainError = error instanceof DomainError
+        ? error
         : new DomainError("INTERNAL_ERROR", "Internal server error");
-      
+
       const response = createErrorResponse(
         (request as any)?.id || "unknown",
         domainError
       );
-      
+
       logMCPResponse(response);
       return response;
     }
@@ -68,4 +68,4 @@ export class MCPDispatcher {
   hasTool(toolName: string): boolean {
     return toolName in this.tools;
   }
-} 
+}

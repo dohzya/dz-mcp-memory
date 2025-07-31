@@ -1,18 +1,18 @@
 import { serve } from "https://deno.land/std@0.218.0/http/server.ts";
 import * as log from "@std/log";
 
-import { createDatabase } from "./db/index.ts";
-import { MemoryService } from "./core/services/memory_service.ts";
-import { ReorganizerService } from "./core/services/reorganizer_service.ts";
-import { MCPDispatcher } from "./api/mcp/dispatcher.ts";
-import { validateAuthToken, parseRequestBody } from "./api/mcp/utils.ts";
-import { createMemorizeTool } from "./api/mcp/tools/memorize.ts";
-import { createListTool } from "./api/mcp/tools/list.ts";
-import { createReorganizeTool } from "./api/mcp/tools/reorganize.ts";
-import { createGetMemoryTool } from "./api/mcp/tools/get_memory.ts";
-import { createGetTagsTool } from "./api/mcp/tools/get_tags.ts";
-import { createGetCategoriesTool } from "./api/mcp/tools/get_categories.ts";
-import { createGetStatsTool } from "./api/mcp/tools/get_stats.ts";
+import { createDatabase } from "./src/db/index.ts";
+import { MemoryService } from "./src/core/services/memory_service.ts";
+import { ReorganizerService } from "./src/core/services/reorganizer_service.ts";
+import { MCPDispatcher } from "./src/api/mcp/dispatcher.ts";
+import { validateAuthToken, parseRequestBody } from "./src/api/mcp/utils.ts";
+import { createMemorizeTool } from "./src/api/mcp/tools/memorize.ts";
+import { createListTool } from "./src/api/mcp/tools/list.ts";
+import { createReorganizeTool } from "./src/api/mcp/tools/reorganize.ts";
+import { createGetMemoryTool } from "./src/api/mcp/tools/get_memory.ts";
+import { createGetTagsTool } from "./src/api/mcp/tools/get_tags.ts";
+import { createGetCategoriesTool } from "./src/api/mcp/tools/get_categories.ts";
+import { createGetStatsTool } from "./src/api/mcp/tools/get_stats.ts";
 
 /**
  * Application configuration
@@ -25,7 +25,7 @@ interface Config {
     readonly connectionString?: string;
     readonly databasePath?: string;
   };
-  readonly logLevel: "DEBUG" | "INFO" | "WARNING" | "ERROR";
+  readonly logLevel: "DEBUG" | "INFO" | "WARN" | "ERROR";
 }
 
 /**
@@ -56,7 +56,7 @@ async function initializeServices(config: Config) {
     },
   });
 
-  log.info("Initializing MCP dz-memory server", { 
+  log.info("Initializing MCP dz-memory server", {
     port: config.port,
     databaseType: config.database.type,
     logLevel: config.logLevel,
@@ -84,7 +84,7 @@ async function initializeServices(config: Config) {
   // Create dispatcher
   const dispatcher = new MCPDispatcher(tools);
 
-  log.info("Services initialized", { 
+  log.info("Services initialized", {
     availableTools: dispatcher.getAvailableTools(),
   });
 
@@ -118,14 +118,15 @@ async function handleRequest(request: Request, dispatcher: MCPDispatcher, config
       },
     });
   } catch (error) {
-    log.error("Request handling failed", { error: error.message });
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    log.error("Request handling failed", { error: errorMessage });
 
     // Return error response
     const errorResponse = {
       id: "error",
       error: {
-        code: error.code || "INTERNAL_ERROR",
-        message: error.message || "Internal server error",
+        code: error instanceof Error && "code" in error ? (error as { code: string }).code : "INTERNAL_ERROR",
+        message: errorMessage || "Internal server error",
       },
     };
 
@@ -144,7 +145,7 @@ async function handleRequest(request: Request, dispatcher: MCPDispatcher, config
 /**
  * Handle CORS preflight requests
  */
-function handleCORS(request: Request): Response {
+function handleCORS(_request: Request): Response {
   return new Response(null, {
     status: 200,
     headers: {
@@ -160,10 +161,10 @@ function handleCORS(request: Request): Response {
  */
 async function main() {
   const config = DEFAULT_CONFIG;
-  
+
   try {
     // Initialize services
-    const { database, dispatcher } = await initializeServices(config);
+    const { database: _database, dispatcher } = await initializeServices(config);
 
     // Create request handler
     const handler = async (request: Request): Promise<Response> => {
@@ -182,11 +183,12 @@ async function main() {
 
     // Start server
     log.info("Starting MCP server", { port: config.port });
-    
+
     await serve(handler, { port: config.port });
 
   } catch (error) {
-    log.error("Failed to start server", { error: error.message });
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    log.error("Failed to start server", { error: errorMessage });
     Deno.exit(1);
   }
 }
@@ -194,4 +196,4 @@ async function main() {
 // Start the application
 if (import.meta.main) {
   main();
-} 
+}

@@ -1,5 +1,9 @@
-import type { MCPRequest, MCPErrorResponse, MCPSuccessResponse } from "../types/mcp.ts";
+import type { MCPRequest, MCPErrorResponse, MCPSuccessResponse, MCPResponse } from "../types/mcp.ts";
 import type { MemoryChunk, MemorySearchParams, ReorganizeParams } from "../../core/models/memory.ts";
+
+// Re-export types from base MCP types
+export type { MCPResponse };
+export { DomainError } from "../types/mcp.ts";
 
 export class ValidationError extends Error {
   constructor(message: string) {
@@ -10,7 +14,8 @@ export class ValidationError extends Error {
 
 export class NotFoundError extends Error {
   constructor(resource: string, id?: string) {
-    super(`${resource} not found${id ? `: ${id}` : ""}`);
+    const message = id ? `${resource} not found: ${id}` : `${resource} not found`;
+    super(message);
     this.name = "NotFoundError";
   }
 }
@@ -68,7 +73,7 @@ export interface GetStatsRequest extends TypedMCPRequest<Record<string, never>> 
 /**
  * Union type for all possible MCP requests
  */
-export type TypedMCPRequestUnion = 
+export type TypedMCPRequestUnion =
   | MemorizeRequest
   | ListRequest
   | ReorganizeRequest
@@ -165,7 +170,7 @@ export interface GetStatsResponse extends MCPSuccessResponse {
 /**
  * Union type for all possible MCP success responses
  */
-export type TypedMCPSuccessResponseUnion = 
+export type TypedMCPSuccessResponseUnion =
   | MemorizeResponse
   | ListResponse
   | ReorganizeResponse
@@ -177,4 +182,4 @@ export type TypedMCPSuccessResponseUnion =
 /**
  * Union type for all possible MCP responses
  */
-export type TypedMCPResponseUnion = TypedMCPSuccessResponseUnion | MCPErrorResponse; 
+export type TypedMCPResponseUnion = TypedMCPSuccessResponseUnion | MCPErrorResponse;

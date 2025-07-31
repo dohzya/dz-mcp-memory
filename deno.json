@@ -1,8 +1,8 @@
 {
-  "name": "mcp-dz-memory",
   "version": "1.0.0",
   "description": "MCP server for long-term memory capabilities",
   "main": "main.ts",
+  "exports": "./main.ts",
   "scripts": {
     "start": "deno run --allow-net --allow-read --allow-write --allow-env main.ts",
     "dev": "deno run --allow-net --allow-read --allow-write --allow-env --watch main.ts",
@@ -34,7 +34,9 @@
   },
   "lint": {
     "rules": {
-      "tags": ["recommended"]
+      "tags": [
+        "recommended"
+      ]
     }
   }
-} 
+}

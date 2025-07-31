@@ -1,0 +1,8 @@
+{
+  "java.import.gradle.java.home": "/Users/Etienne.Vallette.Dosia/.local/share/mise/installs/java/23.0.2",
+  "debug.javascript.defaultRuntimeExecutable": {
+    "pwa-node": "/Users/Etienne.Vallette.Dosia/.local/share/mise/shims/node"
+  },
+  "python.defaultInterpreterPath": "/Users/Etienne.Vallette.Dosia/.local/share/mise/installs/python/3.13.3/bin/python",
+  "deno.enable": true
+}
