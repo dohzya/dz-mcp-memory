@@ -1,0 +1,40 @@
+{
+  "name": "mcp-dz-memory",
+  "version": "1.0.0",
+  "description": "MCP server for long-term memory capabilities",
+  "main": "main.ts",
+  "scripts": {
+    "start": "deno run --allow-net --allow-read --allow-write --allow-env main.ts",
+    "dev": "deno run --allow-net --allow-read --allow-write --allow-env --watch main.ts",
+    "test": "deno test --allow-net --allow-read --allow-write --allow-env",
+    "fmt": "deno fmt",
+    "lint": "deno lint"
+  },
+  "imports": {
+    "@std/log": "https://deno.land/std@0.218.0/log/mod.ts",
+    "@std/path": "https://deno.land/std@0.218.0/path/mod.ts",
+    "@std/fs": "https://deno.land/std@0.218.0/fs/mod.ts",
+    "zod": "https://deno.land/x/zod@v3.22.4/mod.ts",
+    "pg": "https://deno.land/x/postgres@v0.17.0/mod.ts",
+    "sqlite3": "https://deno.land/x/sqlite3@v0.9.2/mod.ts"
+  },
+  "compilerOptions": {
+    "strict": true,
+    "noImplicitAny": true,
+    "noImplicitReturns": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true
+  },
+  "fmt": {
+    "indentWidth": 2,
+    "lineWidth": 80,
+    "semiColons": true,
+    "singleQuote": false,
+    "useTabs": false
+  },
+  "lint": {
+    "rules": {
+      "tags": ["recommended"]
+    }
+  }
+} 
