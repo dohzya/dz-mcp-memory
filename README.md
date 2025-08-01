@@ -26,7 +26,7 @@ Un serveur MCP (Memory-Centric Protocol) qui fournit des capacités de mémoire 
 ## Installation
 
 ### Prérequis
-- [Deno](https://deno.land/) version 1.40 ou supérieure
+- [Deno](https://deno.land/) version 2.0 ou supérieure
 
 ### Installation
 ```bash

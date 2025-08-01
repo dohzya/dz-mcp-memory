@@ -1,4 +1,4 @@
-import { serve } from "https://deno.land/std@0.218.0/http/server.ts";
+import { serve } from "https://deno.land/std@0.224.0/http/server.ts";
 import * as log from "@std/log";
 
 import { createDatabase } from "./src/db/index.ts";

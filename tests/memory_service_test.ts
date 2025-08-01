@@ -1,4 +1,4 @@
-import { assertEquals, assertExists } from "https://deno.land/std@0.218.0/assert/mod.ts";
+import { assertEquals, assertExists } from "https://deno.land/std@0.224.0/assert/mod.ts";
 import { MemoryService } from "../src/core/services/memory_service.ts";
 import { createMemoryDatabase } from "../src/db/memory.ts";
 
