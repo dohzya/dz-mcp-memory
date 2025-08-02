@@ -1,4 +1,4 @@
-import { assertEquals } from "https://deno.land/std@0.218.0/assert/mod.ts";
+import { assertEquals } from "https://deno.land/std@0.224.0/assert/mod.ts";
 
 import { MCPDispatcher } from "../src/api/mcp/dispatcher.ts";
 import { createMemoryDatabase } from "../src/db/memory.ts";

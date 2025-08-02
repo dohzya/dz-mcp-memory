@@ -2,41 +2,54 @@
 
 ## Overview
 
-dz-memory is an MCP (Memory-Centric Protocol) server that provides long-term memory capabilities. It allows memorizing elements with their context, recalling memorized elements through queries and/or context, and reorganizing memorized elements to limit their number and improve the relevance of retrieved information.
+dz-memory is an MCP (Memory-Centric Protocol) server that provides long-term
+memory capabilities. It allows memorizing elements with their context, recalling
+memorized elements through queries and/or context, and reorganizing memorized
+elements to limit their number and improve the relevance of retrieved
+information.
 
 ## Core Features
 
 ### Memory Tool
+
 - Accepts text to memorize
 - Accepts optional metadata (e.g., tags)
 - Splits text into independent information chunks
 - Detects metadata for each information piece
 
 ### Listing Tool
+
 - Accepts text for semantic search
 - Accepts metadata filtering
 - Accepts temporal information filtering
 
 ### Storage
-- Local storage (preferably pg_vector, fallback to sqlite, or in-memory for development)
+
+- Local storage (preferably pg_vector, fallback to sqlite, or in-memory for
+  development)
 
 ### Memory Management
-- Short-term and long-term memory mechanism (ability to recall older elements, but more easily retrieve recent ones)
+
+- Short-term and long-term memory mechanism (ability to recall older elements,
+  but more easily retrieve recent ones)
 - Automatic information reorganization mechanism
 - Automatic metadata reorganization mechanism (e.g., tag merging)
 
 ## Bonus Features (Future)
 
 ### Structured Information Aggregation
+
 - **Person sheet**: groups all memorized information about a given person
   - Potential integration with contact applications
-- **Project sheet**: summarizes technical stack, important links, business knowledge
+- **Project sheet**: summarizes technical stack, important links, business
+  knowledge
 - **Todo list**: with metadata to list tasks related to a given context
   - Potential integration with TODO list tools
 - **Concept sheet**: details the result of a conducted study
   - Potential integration with Obsidian or Notion
 
 ### External Integrations
+
 - Calendar applications
 - Contact management
 - TODO list applications
@@ -44,9 +57,11 @@ dz-memory is an MCP (Memory-Centric Protocol) server that provides long-term mem
 
 ## Use Cases
 
-- Finding the resolution method of an old backend problem when analyzing another backend problem
+- Finding the resolution method of an old backend problem when analyzing another
+  backend problem
 - Finding user style preferences for content generation
-- Finding the name of an application that was analyzed in a previous conversation
+- Finding the name of an application that was analyzed in a previous
+  conversation
 
 ## Technical Architecture
 
@@ -82,9 +97,12 @@ mcp-dz-memory/
 
 - **Hexagonal (Ports & Adapters)** :
   - Le domaine (core/) ne dépend d’aucune technologie ni d’aucun point d’entrée.
-  - Les services métier utilisent des interfaces (ports) pour accéder aux ressources externes (stockage, etc).
-  - Les adapters techniques (infra/) implémentent ces ports pour chaque techno (in-memory, pgvector, sqlite, ...).
-  - Les points d’entrée (api/) orchestrent le tout et font le wiring des dépendances.
+  - Les services métier utilisent des interfaces (ports) pour accéder aux
+    ressources externes (stockage, etc).
+  - Les adapters techniques (infra/) implémentent ces ports pour chaque techno
+    (in-memory, pgvector, sqlite, ...).
+  - Les points d’entrée (api/) orchestrent le tout et font le wiring des
+    dépendances.
 
 - **Extensibilité** :
   - Ajouter un nouveau mode de stockage = nouvelle implémentation dans infra/.
@@ -96,6 +114,7 @@ mcp-dz-memory/
 ### MCP Message Examples
 
 **Memorization request:**
+
 ```json
 {
   "id": "1",
@@ -108,12 +127,15 @@ mcp-dz-memory/
 }
 ```
 
-**Authentication**: All requests must include the static token in the request headers:
+**Authentication**: All requests must include the static token in the request
+headers:
+
 ```
 Authorization: Bearer <static_token>
 ```
 
 **Response:**
+
 ```json
 {
   "id": "1",
@@ -125,6 +147,7 @@ Authorization: Bearer <static_token>
 ```
 
 **Error:**
+
 ```json
 {
   "id": "1",
@@ -138,6 +161,7 @@ Authorization: Bearer <static_token>
 ## Implementation Roadmap
 
 ### Phase 1: Core Features
+
 - Tool `memorize`: memorization, text splitting, metadata detection
 - Tool `list`: semantic search, tag filtering, temporality
 - Tool `reorganize`: merging, cleanup, short/long term management
@@ -146,6 +170,7 @@ Authorization: Bearer <static_token>
 - Unit tests for each tool and service
 
 ### Phase 2: Advanced Features
+
 - Structured information aggregation (person sheets, project sheets, etc.)
 - External application integrations
 - Advanced semantic search capabilities
@@ -153,9 +178,9 @@ Authorization: Bearer <static_token>
 
 ## Technology Stack
 
-- **Runtime**: Deno
+- **Runtime**: Deno 2.0+
 - **Language**: TypeScript
 - **Storage**: pg_vector (preferred), SQLite (fallback), in-memory (development)
 - **Protocol**: MCP over HTTP/WebSocket
 - **Security**: Static token authentication (provided in app configuration)
-- **Testing**: Deno's built-in testing framework 
+- **Testing**: Deno's built-in testing framework

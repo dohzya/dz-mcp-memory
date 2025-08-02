@@ -1,11 +1,11 @@
-import { serve } from "https://deno.land/std@0.218.0/http/server.ts";
+import { serve } from "https://deno.land/std@0.224.0/http/server.ts";
 import * as log from "@std/log";
 
 import { createDatabase } from "./src/db/index.ts";
 import { MemoryService } from "./src/core/services/memory_service.ts";
 import { ReorganizerService } from "./src/core/services/reorganizer_service.ts";
 import { MCPDispatcher } from "./src/api/mcp/dispatcher.ts";
-import { validateAuthToken, parseRequestBody } from "./src/api/mcp/utils.ts";
+import { parseRequestBody, validateAuthToken } from "./src/api/mcp/utils.ts";
 import { createMemorizeTool } from "./src/api/mcp/tools/memorize.ts";
 import { createListTool } from "./src/api/mcp/tools/list.ts";
 import { createReorganizeTool } from "./src/api/mcp/tools/reorganize.ts";
@@ -33,7 +33,8 @@ interface Config {
  */
 const DEFAULT_CONFIG: Config = {
   port: 8000,
-  authToken: Deno.env.get("MCP_AUTH_TOKEN") || "default-token-change-in-production",
+  authToken: Deno.env.get("MCP_AUTH_TOKEN") ||
+    "default-token-change-in-production",
   database: {
     type: "memory", // Use in-memory for development
     connectionString: Deno.env.get("DATABASE_URL"),
@@ -94,7 +95,11 @@ async function initializeServices(config: Config) {
 /**
  * Handle HTTP requests
  */
-async function handleRequest(request: Request, dispatcher: MCPDispatcher, config: Config): Promise<Response> {
+async function handleRequest(
+  request: Request,
+  dispatcher: MCPDispatcher,
+  config: Config,
+): Promise<Response> {
   try {
     // Check authentication
     const authHeader = request.headers.get("Authorization");
@@ -125,7 +130,9 @@ async function handleRequest(request: Request, dispatcher: MCPDispatcher, config
     const errorResponse = {
       id: "error",
       error: {
-        code: error instanceof Error && "code" in error ? (error as { code: string }).code : "INTERNAL_ERROR",
+        code: error instanceof Error && "code" in error
+          ? (error as { code: string }).code
+          : "INTERNAL_ERROR",
         message: errorMessage || "Internal server error",
       },
     };
@@ -164,7 +171,9 @@ async function main() {
 
   try {
     // Initialize services
-    const { database: _database, dispatcher } = await initializeServices(config);
+    const { database: _database, dispatcher } = await initializeServices(
+      config,
+    );
 
     // Create request handler
     const handler = async (request: Request): Promise<Response> => {
@@ -185,7 +194,6 @@ async function main() {
     log.info("Starting MCP server", { port: config.port });
 
     await serve(handler, { port: config.port });
-
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);
     log.error("Failed to start server", { error: errorMessage });
