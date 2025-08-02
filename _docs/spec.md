@@ -153,7 +153,7 @@ Authorization: Bearer <static_token>
 
 ## Technology Stack
 
-- **Runtime**: Deno
+- **Runtime**: Deno 2.0+
 - **Language**: TypeScript
 - **Storage**: pg_vector (preferred), SQLite (fallback), in-memory (development)
 - **Protocol**: MCP over HTTP/WebSocket
