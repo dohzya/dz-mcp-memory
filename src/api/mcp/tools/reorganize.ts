@@ -8,13 +8,17 @@ import { parseReorganizeParams } from "../utils.ts";
  * MCP tool for reorganizing memories
  * Merges similar tags, cleans up old memories, and optimizes storage
  */
-export function createReorganizeTool(reorganizerService: ReorganizerService): ToolHandler {
-  return async (params: Record<string, unknown>): Promise<Record<string, unknown>> => {
+export function createReorganizeTool(
+  reorganizerService: ReorganizerService,
+): ToolHandler {
+  return async (
+    params: Record<string, unknown>,
+  ): Promise<Record<string, unknown>> => {
     try {
       // Parse and validate reorganization parameters
       const reorganizeParams = parseReorganizeParams(params);
-      
-      log.info("Starting memory reorganization", { 
+
+      log.info("Starting memory reorganization", {
         mergeSimilarTags: reorganizeParams.mergeSimilarTags,
         cleanupOldMemories: reorganizeParams.cleanupOldMemories,
         optimizeStorage: reorganizeParams.optimizeStorage,
@@ -24,7 +28,7 @@ export function createReorganizeTool(reorganizerService: ReorganizerService): To
       // Perform reorganization
       const result = await reorganizerService.reorganize(reorganizeParams);
 
-      log.info("Reorganization completed", { 
+      log.info("Reorganization completed", {
         status: result.status,
         tagsMerged: result.tagsMerged,
         memoriesCleaned: result.memoriesCleaned,
@@ -39,8 +43,10 @@ export function createReorganizeTool(reorganizerService: ReorganizerService): To
         ...(result.error && { error: result.error }),
       };
     } catch (error) {
-      log.error("Memory reorganization failed", { error: (error as Error).message });
+      log.error("Memory reorganization failed", {
+        error: (error as Error).message,
+      });
       throw error;
     }
   };
-} 
+}

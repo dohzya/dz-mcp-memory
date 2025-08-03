@@ -1,4 +1,7 @@
-import { assertEquals, assertExists } from "https://deno.land/std@0.218.0/assert/mod.ts";
+import {
+  assertEquals,
+  assertExists,
+} from "https://deno.land/std@0.224.0/assert/mod.ts";
 import { MemoryService } from "../src/core/services/memory_service.ts";
 import { createMemoryDatabase } from "../src/db/memory.ts";
 
@@ -9,7 +12,8 @@ Deno.test("MemoryService - memorize text", async () => {
   const memoryService = new MemoryService(db);
 
   const result = await memoryService.memorize({
-    text: "This is a test memory about API endpoints. The issue was with authentication.",
+    text:
+      "This is a test memory about API endpoints. The issue was with authentication.",
     tags: ["api", "test"],
     context: "Testing",
     priority: 8,
@@ -89,7 +93,10 @@ Deno.test("MemoryService - search memories", async () => {
   });
 
   assertEquals(tagSearchResult.memories.length > 0, true);
-  assertEquals(tagSearchResult.memories[0].metadata.tags.includes("database"), true);
+  assertEquals(
+    tagSearchResult.memories[0].metadata.tags.includes("database"),
+    true,
+  );
 });
 
 Deno.test("MemoryService - get tags and categories", async () => {

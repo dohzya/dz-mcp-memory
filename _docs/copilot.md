@@ -1,11 +1,15 @@
 # LLM Copilot Instructions
 
 ## Language
+
 - **Code and documentation must be written in English**
-- All comments, variable names, function names, and documentation should be in English
-- Only write comments that provide additional information beyond what the code already shows
+- All comments, variable names, function names, and documentation should be in
+  English
+- Only write comments that provide additional information beyond what the code
+  already shows
 
 ## Comment Guidelines
+
 - **DO NOT** write comments that simply describe what the code does
 - **DO** write comments that explain:
   - **Why** the code is written this way (design decisions, trade-offs)
@@ -18,6 +22,7 @@
 ## Examples
 
 ### ❌ Bad comments (just describing the code):
+
 ```typescript
 // Loop through the array
 for (const item of items) {
@@ -30,6 +35,7 @@ for (const item of items) {
 ```
 
 ### ✅ Good comments (providing additional context):
+
 ```typescript
 // Using for...of instead of forEach to avoid callback overhead
 // and maintain synchronous execution for better error handling
@@ -45,6 +51,7 @@ for (const item of items) {
 ```
 
 ## Code Style
+
 - Use TypeScript with strict mode
 - Follow modern ES6+ patterns
 - Prefer functional programming where appropriate
@@ -52,7 +59,8 @@ for (const item of items) {
 - Use meaningful error messages and logging
 
 ## Documentation
+
 - Write comprehensive JSDoc for public APIs
 - Include usage examples in documentation
 - Document edge cases and error conditions
-- Keep documentation up-to-date with code changes 
+- Keep documentation up-to-date with code changes

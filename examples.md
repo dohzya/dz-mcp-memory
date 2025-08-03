@@ -1,6 +1,7 @@
 # Exemple d'utilisation de l'API MCP dz-memory
 
-Ce document présente des exemples pratiques d'utilisation de l'API MCP dz-memory.
+Ce document présente des exemples pratiques d'utilisation de l'API MCP
+dz-memory.
 
 ## Démarrage du serveur
 
@@ -169,47 +170,50 @@ curl -X POST http://localhost:8000 \
 
 ```javascript
 class MCPMemoryClient {
-  constructor(baseUrl = 'http://localhost:8000', authToken = 'default-token-change-in-production') {
+  constructor(
+    baseUrl = "http://localhost:8000",
+    authToken = "default-token-change-in-production",
+  ) {
     this.baseUrl = baseUrl;
     this.authToken = authToken;
   }
 
   async memorize(text, options = {}) {
-    return this.request('memorize', {
+    return this.request("memorize", {
       text,
       tags: options.tags || [],
       context: options.context,
       priority: options.priority || 5,
-      category: options.category
+      category: options.category,
     });
   }
 
   async search(query, options = {}) {
-    return this.request('list', {
+    return this.request("list", {
       query,
       tags: options.tags,
       category: options.category,
       limit: options.limit || 10,
-      sortBy: options.sortBy || 'relevance'
+      sortBy: options.sortBy || "relevance",
     });
   }
 
   async getStats() {
-    return this.request('get_stats', {});
+    return this.request("get_stats", {});
   }
 
   async request(tool, params) {
     const response = await fetch(this.baseUrl, {
-      method: 'POST',
+      method: "POST",
       headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${this.authToken}`
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${this.authToken}`,
       },
       body: JSON.stringify({
         id: Date.now().toString(),
         tool,
-        params
-      })
+        params,
+      }),
     });
 
     const result = await response.json();
@@ -229,19 +233,19 @@ const memoryClient = new MCPMemoryClient();
 await memoryClient.memorize(
   "L'authentification JWT nécessite une clé secrète robuste et une expiration courte",
   {
-    tags: ['jwt', 'auth', 'security'],
-    category: 'technique',
-    priority: 8
-  }
+    tags: ["jwt", "auth", "security"],
+    category: "technique",
+    priority: 8,
+  },
 );
 
 // Rechercher
-const results = await memoryClient.search('JWT authentification', {
-  tags: ['auth'],
-  limit: 5
+const results = await memoryClient.search("JWT authentification", {
+  tags: ["auth"],
+  limit: 5,
 });
 
-console.log('Souvenirs trouvés:', results.memories);
+console.log("Souvenirs trouvés:", results.memories);
 ```
 
 ### Exemple en Python
@@ -389,4 +393,6 @@ curl -X POST http://localhost:8000 \
   }'
 ```
 
-Ces exemples montrent comment utiliser l'API MCP dz-memory pour créer un système de mémoire long terme polyvalent, que ce soit pour le développement, la gestion client ou la constitution d'une base de connaissances.
+Ces exemples montrent comment utiliser l'API MCP dz-memory pour créer un système
+de mémoire long terme polyvalent, que ce soit pour le développement, la gestion
+client ou la constitution d'une base de connaissances.

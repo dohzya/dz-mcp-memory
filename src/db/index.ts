@@ -19,11 +19,15 @@ export interface DatabaseConfig {
 /**
  * Factory function to create database instance
  */
-export async function createDatabase(config: DatabaseConfig): Promise<Database> {
+export async function createDatabase(
+  config: DatabaseConfig,
+): Promise<Database> {
   switch (config.type) {
     case "pgvector": {
       // TODO: Implement when dependencies are stable
-      throw new Error("PostgreSQL with pgvector support is not yet implemented");
+      throw new Error(
+        "PostgreSQL with pgvector support is not yet implemented",
+      );
     }
     case "sqlite": {
       // TODO: Implement when dependencies are stable

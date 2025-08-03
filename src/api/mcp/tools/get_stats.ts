@@ -7,7 +7,9 @@ import type { MemoryService } from "../../../core/services/memory_service.ts";
  * MCP tool for getting memory statistics
  */
 export function createGetStatsTool(memoryService: MemoryService): ToolHandler {
-  return async (params: Record<string, unknown>): Promise<Record<string, unknown>> => {
+  return async (
+    params: Record<string, unknown>,
+  ): Promise<Record<string, unknown>> => {
     try {
       // Validate that no parameters are provided
       if (Object.keys(params).length > 0) {
@@ -19,7 +21,7 @@ export function createGetStatsTool(memoryService: MemoryService): ToolHandler {
       // Retrieve statistics
       const stats = await memoryService.getStats();
 
-      log.info("Statistics retrieved", { 
+      log.info("Statistics retrieved", {
         totalMemories: stats.totalMemories,
         totalTags: stats.totalTags,
         totalCategories: stats.totalCategories,
@@ -37,4 +39,4 @@ export function createGetStatsTool(memoryService: MemoryService): ToolHandler {
       throw error;
     }
   };
-} 
+}

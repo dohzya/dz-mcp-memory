@@ -65,11 +65,11 @@ export class ReorganizerService {
 
       // Use the most common tag as the primary tag
       const primaryTag = this.selectPrimaryTag(group);
-      const secondaryTags = group.filter(tag => tag !== primaryTag);
+      const secondaryTags = group.filter((tag) => tag !== primaryTag);
 
-      log.info("Merging similar tags", { 
-        primary: primaryTag, 
-        secondary: secondaryTags 
+      log.info("Merging similar tags", {
+        primary: primaryTag,
+        secondary: secondaryTags,
       });
 
       // TODO: Update all memories that use secondary tags to use primary tag
@@ -83,7 +83,9 @@ export class ReorganizerService {
   /**
    * Group tags by similarity (simple string similarity for now)
    */
-  private groupSimilarTags(tags: readonly string[]): readonly (readonly string[])[] {
+  private groupSimilarTags(
+    tags: readonly string[],
+  ): readonly (readonly string[])[] {
     const groups: string[][] = [];
     const processed = new Set<string>();
 
@@ -136,7 +138,9 @@ export class ReorganizerService {
    * Calculate Levenshtein distance between two strings
    */
   private levenshteinDistance(str1: string, str2: string): number {
-    const matrix = Array(str2.length + 1).fill(null).map(() => Array(str1.length + 1).fill(null));
+    const matrix = Array(str2.length + 1).fill(null).map(() =>
+      Array(str1.length + 1).fill(null)
+    );
 
     for (let i = 0; i <= str1.length; i++) {
       matrix[0][i] = i;
@@ -152,7 +156,7 @@ export class ReorganizerService {
         matrix[j][i] = Math.min(
           matrix[j][i - 1] + 1, // deletion
           matrix[j - 1][i] + 1, // insertion
-          matrix[j - 1][i - 1] + indicator // substitution
+          matrix[j - 1][i - 1] + indicator, // substitution
         );
       }
     }
@@ -169,15 +173,15 @@ export class ReorganizerService {
       // Prefer tags without hyphens or underscores
       const aClean = a.replace(/[-_]/g, "");
       const bClean = b.replace(/[-_]/g, "");
-      
+
       if (aClean.length !== bClean.length) {
         return aClean.length - bClean.length;
       }
-      
+
       // If same length, prefer the one without special characters
       const aSpecial = (a.match(/[-_]/g) || []).length;
       const bSpecial = (b.match(/[-_]/g) || []).length;
-      
+
       return aSpecial - bSpecial;
     });
 
@@ -189,7 +193,7 @@ export class ReorganizerService {
    */
   private async cleanupOldMemories(maxMemories?: number): Promise<number> {
     const stats = await this.db.getStats();
-    
+
     if (!maxMemories) {
       // Default: keep last 1000 memories
       maxMemories = 1000;
@@ -201,23 +205,23 @@ export class ReorganizerService {
 
     const removed = await this.db.cleanup(maxMemories);
     log.info("Cleaned up old memories", { removed, remaining: maxMemories });
-    
+
     return removed;
   }
 
   /**
    * Optimize storage by removing duplicates and compressing data
    */
-  private async optimizeStorage(): Promise<boolean> {
+  private optimizeStorage(): Promise<boolean> {
     // For in-memory database, there's not much optimization to do
     // In a real database, this could involve:
     // - Removing duplicate memories
     // - Compressing text content
     // - Optimizing indexes
     // - Vacuuming the database
-    
+
     log.info("Storage optimization completed");
-    return true;
+    return Promise.resolve(true);
   }
 
   /**
@@ -231,21 +235,22 @@ export class ReorganizerService {
   }> {
     const stats = await this.db.getStats();
     const allTags = await this.db.getAllTags();
-    
+
     // Count potential tag merges
     const tagGroups = this.groupSimilarTags(allTags);
-    const potentialMerges = tagGroups.filter(group => group.length > 1).length;
-    
+    const potentialMerges =
+      tagGroups.filter((group) => group.length > 1).length;
+
     // Count old memories (accessed less than 5 times and older than 30 days)
     const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
     const searchResult = await this.db.searchMemories({
       dateTo: thirtyDaysAgo,
       limit: 1000, // Get a sample to estimate
     });
-    
-    const oldMemories = searchResult.memories.filter((memory: import("../models/memory.ts").MemoryChunk) => 
-      memory.accessCount < 5
-    ).length;
+
+    const oldMemories = searchResult.memories.filter((
+      memory: import("../models/memory.ts").MemoryChunk,
+    ) => memory.accessCount < 5).length;
 
     return {
       totalTags: stats.totalTags,
@@ -254,4 +259,4 @@ export class ReorganizerService {
       oldMemories,
     };
   }
-} 
+}

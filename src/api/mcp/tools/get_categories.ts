@@ -6,8 +6,12 @@ import type { MemoryService } from "../../../core/services/memory_service.ts";
 /**
  * MCP tool for getting all available categories
  */
-export function createGetCategoriesTool(memoryService: MemoryService): ToolHandler {
-  return async (params: Record<string, unknown>): Promise<Record<string, unknown>> => {
+export function createGetCategoriesTool(
+  memoryService: MemoryService,
+): ToolHandler {
+  return async (
+    params: Record<string, unknown>,
+  ): Promise<Record<string, unknown>> => {
     try {
       // Validate that no parameters are provided
       if (Object.keys(params).length > 0) {
@@ -29,4 +33,4 @@ export function createGetCategoriesTool(memoryService: MemoryService): ToolHandl
       throw error;
     }
   };
-} 
+}

@@ -1,7 +1,11 @@
+// deno-lint-ignore-file require-await
 import * as log from "@std/log";
-
 import type { StoragePort } from "../core/ports/storage_port.ts";
-import type { MemoryChunk, MemorySearchParams, MemorySearchResult } from "../core/models/memory.ts";
+import type {
+  MemoryChunk,
+  MemorySearchParams,
+  MemorySearchResult,
+} from "../core/models/memory.ts";
 
 /**
  * In-memory database implementation for development and testing
@@ -22,10 +26,15 @@ export class MemoryDatabase implements StoragePort {
     this.#memories.clear();
   }
 
-  async storeMemory(memory: Omit<MemoryChunk, "id" | "createdAt" | "updatedAt" | "accessCount" | "lastAccessedAt">): Promise<MemoryChunk> {
+  async storeMemory(
+    memory: Omit<
+      MemoryChunk,
+      "id" | "createdAt" | "updatedAt" | "accessCount" | "lastAccessedAt"
+    >,
+  ): Promise<MemoryChunk> {
     const now = new Date();
     const id = `mem-${this.#nextId++}`;
-    
+
     const newMemory: MemoryChunk = {
       id,
       text: memory.text,
@@ -38,7 +47,7 @@ export class MemoryDatabase implements StoragePort {
 
     this.#memories.set(id, newMemory);
     log.info("Stored memory", { id, textLength: memory.text.length });
-    
+
     return newMemory;
   }
 
@@ -58,7 +67,10 @@ export class MemoryDatabase implements StoragePort {
     return undefined;
   }
 
-  async updateMemory(id: string, updates: Partial<MemoryChunk>): Promise<MemoryChunk | undefined> {
+  async updateMemory(
+    id: string,
+    updates: Partial<MemoryChunk>,
+  ): Promise<MemoryChunk | undefined> {
     const memory = this.#memories.get(id);
     if (!memory) return undefined;
 
@@ -72,30 +84,32 @@ export class MemoryDatabase implements StoragePort {
     return updatedMemory;
   }
 
-  async searchMemories(params: MemorySearchParams): Promise<MemorySearchResult> {
+  async searchMemories(
+    params: MemorySearchParams,
+  ): Promise<MemorySearchResult> {
     let memories = Array.from(this.#memories.values());
 
     // Apply filters
     if (params.tags && params.tags.length > 0) {
-      memories = memories.filter((memory: MemoryChunk) => 
+      memories = memories.filter((memory: MemoryChunk) =>
         params.tags!.some((tag: string) => memory.metadata.tags.includes(tag))
       );
     }
 
     if (params.category) {
-      memories = memories.filter(memory => 
+      memories = memories.filter((memory) =>
         memory.metadata.category === params.category
       );
     }
 
     if (params.dateFrom) {
-      memories = memories.filter(memory => 
+      memories = memories.filter((memory) =>
         memory.createdAt >= params.dateFrom!
       );
     }
 
     if (params.dateTo) {
-      memories = memories.filter(memory => 
+      memories = memories.filter((memory) =>
         memory.createdAt <= params.dateTo!
       );
     }
@@ -103,17 +117,20 @@ export class MemoryDatabase implements StoragePort {
     // Apply text search (simple substring matching for in-memory)
     if (params.query) {
       const query = params.query.toLowerCase();
-      memories = memories.filter((memory: MemoryChunk) => 
+      memories = memories.filter((memory: MemoryChunk) =>
         memory.text.toLowerCase().includes(query) ||
-        memory.metadata.tags.some((tag: string) => tag.toLowerCase().includes(query)) ||
-        (memory.metadata.context && memory.metadata.context.toLowerCase().includes(query))
+        memory.metadata.tags.some((tag: string) =>
+          tag.toLowerCase().includes(query)
+        ) ||
+        (memory.metadata.context &&
+          memory.metadata.context.toLowerCase().includes(query))
       );
     }
 
     // Apply sorting
     const sortBy = params.sortBy || "date";
     const sortOrder = params.sortOrder || "desc";
-    
+
     memories.sort((a, b) => {
       let comparison = 0;
       switch (sortBy) {
@@ -182,10 +199,10 @@ export class MemoryDatabase implements StoragePort {
     const totalMemories = this.#memories.size;
     const tags = await this.getAllTags();
     const categories = await this.getAllCategories();
-    
+
     let oldestMemory: Date | null = null;
     let newestMemory: Date | null = null;
-    
+
     for (const memory of this.#memories.values()) {
       if (!oldestMemory || memory.createdAt < oldestMemory) {
         oldestMemory = memory.createdAt;
@@ -204,11 +221,11 @@ export class MemoryDatabase implements StoragePort {
     };
   }
 
-  async cleanup(maxMemories?: number): Promise<number> {
-    if (!maxMemories) return 0;
+  cleanup(maxMemories?: number): Promise<number> {
+    if (!maxMemories) return Promise.resolve(0);
 
     const memories = Array.from(this.#memories.values());
-    if (memories.length <= maxMemories) return 0;
+    if (memories.length <= maxMemories) return Promise.resolve(0);
 
     // Sort by access count and date (least accessed and oldest first)
     memories.sort((a, b) => {
@@ -223,8 +240,11 @@ export class MemoryDatabase implements StoragePort {
       this.#memories.delete(memory.id);
     }
 
-    log.info("Cleaned up memories", { removed: toRemove.length, remaining: this.#memories.size });
-    return toRemove.length;
+    log.info("Cleaned up memories", {
+      removed: toRemove.length,
+      remaining: this.#memories.size,
+    });
+    return Promise.resolve(toRemove.length);
   }
 }
 
@@ -233,4 +253,4 @@ export class MemoryDatabase implements StoragePort {
  */
 export function createMemoryDatabase(): StoragePort {
   return new MemoryDatabase();
-} 
+}

@@ -1,4 +1,8 @@
-import type { MemoryChunk, MemorySearchParams, MemorySearchResult } from "../models/memory.ts";
+import type {
+  MemoryChunk,
+  MemorySearchParams,
+  MemorySearchResult,
+} from "../models/memory.ts";
 
 /**
  * Port d'accès au stockage pour les mémoires (hexagonal)
@@ -6,9 +10,17 @@ import type { MemoryChunk, MemorySearchParams, MemorySearchResult } from "../mod
 export interface StoragePort {
   initialize(): Promise<void>;
   close(): Promise<void>;
-  storeMemory(memory: Omit<MemoryChunk, "id" | "createdAt" | "updatedAt" | "accessCount" | "lastAccessedAt">): Promise<MemoryChunk>;
+  storeMemory(
+    memory: Omit<
+      MemoryChunk,
+      "id" | "createdAt" | "updatedAt" | "accessCount" | "lastAccessedAt"
+    >,
+  ): Promise<MemoryChunk>;
   getMemory(id: string): Promise<MemoryChunk | undefined>;
-  updateMemory(id: string, updates: Partial<MemoryChunk>): Promise<MemoryChunk | undefined>;
+  updateMemory(
+    id: string,
+    updates: Partial<MemoryChunk>,
+  ): Promise<MemoryChunk | undefined>;
   searchMemories(params: MemorySearchParams): Promise<MemorySearchResult>;
   getAllTags(): Promise<readonly string[]>;
   getAllCategories(): Promise<readonly string[]>;
