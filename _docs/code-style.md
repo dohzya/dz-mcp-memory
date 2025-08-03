@@ -1,12 +1,16 @@
 # TypeScript/JavaScript Code Style Guidelines
 
-> **Note:** This style guide follows Deno's code style conventions for consistency and best practices.
+> **Note:** This style guide follows Deno's code style conventions for
+> consistency and best practices.
 
 ## 1. General Structure
 
-- **Modules:** Use ES6 import/export. Group imports by origin (external libraries first, then internal modules).
-- **Files:** One file = one logical module. Use `mod.ts` as entry point (not `index.ts`). Use underscores in filenames (`file_server.ts`).
-- **Exported functions:** Max 2 required args, put the rest in an options object.
+- **Modules:** Use ES6 import/export. Group imports by origin (external
+  libraries first, then internal modules).
+- **Files:** One file = one logical module. Use `mod.ts` as entry point (not
+  `index.ts`). Use underscores in filenames (`file_server.ts`).
+- **Exported functions:** Max 2 required args, put the rest in an options
+  object.
 
 ## 1.1 Import Order
 
@@ -16,6 +20,7 @@
   - Then, import local modules (project files)
 
 Example:
+
 ```ts
 import * as log from "@std/log";
 import { z } from "zod";
@@ -26,9 +31,12 @@ import { SpecificConfig } from "./config.ts";
 
 ## 2. Naming
 
-- **Variables and functions:** Use camelCase, including acronyms (e.g., `convertUrl`, not `convertURL`).
-- **Types and interfaces:** Use PascalCase (e.g., `WorktreeListItem`, `InitWorkspaceOptions`).
-- **Constants:** Use UPPER_SNAKE_CASE for top-level static items, otherwise camelCase.
+- **Variables and functions:** Use camelCase, including acronyms (e.g.,
+  `convertUrl`, not `convertURL`).
+- **Types and interfaces:** Use PascalCase (e.g., `WorktreeListItem`,
+  `InitWorkspaceOptions`).
+- **Constants:** Use UPPER_SNAKE_CASE for top-level static items, otherwise
+  camelCase.
 - **Private fields:** Use `#field` syntax over `private` keyword.
 
 ## 3. Typing
@@ -40,25 +48,34 @@ import { SpecificConfig } from "./config.ts";
 
 ## 4. Functions
 
-- **Declaration:** Use the `function` keyword for exported functions, and arrow functions for callbacks or internal functions.
-- **Async/await:** Always use `async/await` for promise handling, never chain `.then()` or `.catch()`.
+- **Declaration:** Use the `function` keyword for exported functions, and arrow
+  functions for callbacks or internal functions.
+- **Async/await:** Always use `async/await` for promise handling, never chain
+  `.then()` or `.catch()`.
 - **Explicit return:** Always explicitly return the expected value.
 
 ## 5. Error Handling
 
-- **Business errors**: Expected domain failures (validation, not-found, etc.). Return `T | ErrorClass` unions, handle locally.
-- **Technical errors**: Unexpected failures (network, database, etc.). Throw to bubble up to central handler.
+- **Business errors**: Expected domain failures (validation, not-found, etc.).
+  Return `T | ErrorClass` unions, handle locally.
+- **Technical errors**: Unexpected failures (network, database, etc.). Throw to
+  bubble up to central handler.
 
 example:
+
 ```ts
 // Business errors: return union
 class DomainError {
-  constructor(public code: string, public message: string, public metadata?: any) {}
+  constructor(
+    public code: string,
+    public message: string,
+    public metadata?: any,
+  ) {}
 }
 
 function parseData(input: string): MyData | DomainError {
   if (!isValid(input)) {
-    return new DomainError('PARSE_INVALID', 'Invalid format', { input });
+    return new DomainError("PARSE_INVALID", "Invalid format", { input });
   }
   return buildMyData(input);
 }
@@ -104,12 +121,14 @@ log.error("Database connection failed", { error: err.message });
 
 ## 7. Syntax Style
 
-> **Formatting:** Use `deno fmt` for consistent code formatting. The rules below describe the expected output.
+> **Formatting:** Use `deno fmt` for consistent code formatting. The rules below
+> describe the expected output.
 
 - **Indentation:** 2 spaces, never tabs.
 - **Spaces:** Always put a space after commas and around operators.
 - **Braces:** Always open braces on the same line.
-- **Parentheses:** Always wrap conditions and arguments in parentheses, even for single-line blocks.
+- **Parentheses:** Always wrap conditions and arguments in parentheses, even for
+  single-line blocks.
 - **Semicolons:** Always end statements with a semicolon.
 
 ## 8. Objects and Arrays
@@ -125,8 +144,10 @@ log.error("Database connection failed", { error: err.message });
 ## 10. Miscellaneous
 
 - **Comments:** Prefer context or intent comments, avoid obvious comments.
-- **TODO/FIXME:** Use format `// TODO(username)` or `// TODO(#123)` with GitHub username or issue number.
-- **Dead code:** Remove obsolete commented code, unless it serves as an example or documentation.
+- **TODO/FIXME:** Use format `// TODO(username)` or `// TODO(#123)` with GitHub
+  username or issue number.
+- **Dead code:** Remove obsolete commented code, unless it serves as an example
+  or documentation.
 - **JSDoc:** Document all exported symbols with single-line JSDoc when possible.
 
 ---
@@ -153,4 +174,6 @@ export async function myFunction(arg: string): Promise<void> {
 
 ---
 
-This guide is based on the analyzed project's codebase. It can be adapted to the specific needs of another project, but it ensures style and structure consistency to facilitate maintenance and collaboration.
+This guide is based on the analyzed project's codebase. It can be adapted to the
+specific needs of another project, but it ensures style and structure
+consistency to facilitate maintenance and collaboration.

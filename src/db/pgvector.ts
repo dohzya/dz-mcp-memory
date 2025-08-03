@@ -2,8 +2,22 @@ import * as log from "@std/log";
 import { Client } from "pg";
 
 import type { StoragePort } from "../core/ports/storage_port.ts";
-import type { MemoryChunk, MemorySearchParams, MemorySearchResult } from "../core/models/memory.ts";
+import type {
+  MemoryChunk,
+  MemorySearchParams,
+  MemorySearchResult,
+} from "../core/models/memory.ts";
 import type { DatabaseConfig } from "./index.ts";
+
+interface MemoryRow {
+  id: string;
+  text: string;
+  metadata: string;
+  created_at: string;
+  updated_at: string;
+  access_count: number;
+  last_accessed_at: string;
+}
 
 /**
  * PostgreSQL with pgvector extension implementation
@@ -16,8 +30,11 @@ export class PgVectorDatabase implements StoragePort {
   constructor(private readonly config: DatabaseConfig) {}
 
   async initialize(): Promise<void> {
-    const connectionString = this.config.connectionString || "postgresql://localhost:5432/memory";
-    log.info("Initializing PostgreSQL database with pgvector", { connectionString });
+    const connectionString = this.config.connectionString ||
+      "postgresql://localhost:5432/memory";
+    log.info("Initializing PostgreSQL database with pgvector", {
+      connectionString,
+    });
 
     this.client = new Client(connectionString);
     await this.client.connect();
@@ -40,10 +57,18 @@ export class PgVectorDatabase implements StoragePort {
     `);
 
     // Create indexes
-    await this.client.queryObject("CREATE INDEX IF NOT EXISTS idx_memories_created_at ON memories (created_at)");
-    await this.client.queryObject("CREATE INDEX IF NOT EXISTS idx_memories_tags ON memories USING GIN ((metadata->'tags'))");
-    await this.client.queryObject("CREATE INDEX IF NOT EXISTS idx_memories_category ON memories ((metadata->>'category'))");
-    await this.client.queryObject("CREATE INDEX IF NOT EXISTS idx_memories_embedding ON memories USING ivfflat (embedding vector_cosine_ops) WITH (lists = 100)");
+    await this.client.queryObject(
+      "CREATE INDEX IF NOT EXISTS idx_memories_created_at ON memories (created_at)",
+    );
+    await this.client.queryObject(
+      "CREATE INDEX IF NOT EXISTS idx_memories_tags ON memories USING GIN ((metadata->'tags'))",
+    );
+    await this.client.queryObject(
+      "CREATE INDEX IF NOT EXISTS idx_memories_category ON memories ((metadata->>'category'))",
+    );
+    await this.client.queryObject(
+      "CREATE INDEX IF NOT EXISTS idx_memories_embedding ON memories USING ivfflat (embedding vector_cosine_ops) WITH (lists = 100)",
+    );
 
     // Create function to update updated_at timestamp
     await this.client.queryObject(`
@@ -75,7 +100,12 @@ export class PgVectorDatabase implements StoragePort {
     }
   }
 
-  async storeMemory(memory: Omit<MemoryChunk, "id" | "createdAt" | "updatedAt" | "accessCount" | "lastAccessedAt">): Promise<MemoryChunk> {
+  async storeMemory(
+    memory: Omit<
+      MemoryChunk,
+      "id" | "createdAt" | "updatedAt" | "accessCount" | "lastAccessedAt"
+    >,
+  ): Promise<MemoryChunk> {
     if (!this.client) throw new Error("Database not initialized");
 
     const id = `mem-${this.nextId++}`;
@@ -84,14 +114,21 @@ export class PgVectorDatabase implements StoragePort {
     // This is just a placeholder - proper semantic search would require actual embeddings
     const embedding = this.generateSimpleEmbedding(memory.text);
 
-    const result = await this.client.queryObject(
+    const result = await this.client.queryObject<MemoryRow>(
       `INSERT INTO memories (id, text, metadata, embedding, access_count, last_accessed_at)
        VALUES ($1, $2, $3, $4, $5, $6)
        RETURNING id, text, metadata, created_at, updated_at, access_count, last_accessed_at`,
-      [id, memory.text, JSON.stringify(memory.metadata), `[${embedding.join(",")}]`, 0, new Date()]
+      [
+        id,
+        memory.text,
+        JSON.stringify(memory.metadata),
+        `[${embedding.join(",")}]`,
+        0,
+        new Date(),
+      ],
     );
 
-    const row = result.rows[0] as any;
+    const row = result.rows[0];
 
     const newMemory: MemoryChunk = {
       id: row.id,
@@ -103,7 +140,10 @@ export class PgVectorDatabase implements StoragePort {
       lastAccessedAt: new Date(row.last_accessed_at),
     };
 
-    log.info("Stored memory in PostgreSQL", { id, textLength: memory.text.length });
+    log.info("Stored memory in PostgreSQL", {
+      id,
+      textLength: memory.text.length,
+    });
 
     return newMemory;
   }
@@ -114,17 +154,17 @@ export class PgVectorDatabase implements StoragePort {
     // Update access statistics first
     await this.client.queryObject(
       "UPDATE memories SET access_count = access_count + 1, last_accessed_at = NOW() WHERE id = $1",
-      [id]
+      [id],
     );
 
-    const result = await this.client.queryObject(
+    const result = await this.client.queryObject<MemoryRow>(
       "SELECT id, text, metadata, created_at, updated_at, access_count, last_accessed_at FROM memories WHERE id = $1",
-      [id]
+      [id],
     );
 
     if (result.rows.length === 0) return undefined;
 
-    const row = result.rows[0] as any;
+    const row = result.rows[0];
 
     return {
       id: row.id,
@@ -137,11 +177,14 @@ export class PgVectorDatabase implements StoragePort {
     };
   }
 
-  async updateMemory(id: string, updates: Partial<MemoryChunk>): Promise<MemoryChunk | undefined> {
+  async updateMemory(
+    id: string,
+    updates: Partial<MemoryChunk>,
+  ): Promise<MemoryChunk | undefined> {
     if (!this.client) throw new Error("Database not initialized");
 
     const setParts: string[] = [];
-    const values: any[] = [];
+    const values: unknown[] = [];
     let paramIndex = 1;
 
     if (updates.text !== undefined) {
@@ -170,15 +213,15 @@ export class PgVectorDatabase implements StoragePort {
 
     values.push(id);
 
-    const result = await this.client.queryObject(
+    const result = await this.client.queryObject<MemoryRow>(
       `UPDATE memories SET ${setParts.join(", ")} WHERE id = $${paramIndex}
        RETURNING id, text, metadata, created_at, updated_at, access_count, last_accessed_at`,
-      values
+      values,
     );
 
     if (result.rows.length === 0) return undefined;
 
-    const row = result.rows[0] as any;
+    const row = result.rows[0];
 
     return {
       id: row.id,
@@ -191,11 +234,14 @@ export class PgVectorDatabase implements StoragePort {
     };
   }
 
-  async searchMemories(params: MemorySearchParams): Promise<MemorySearchResult> {
+  async searchMemories(
+    params: MemorySearchParams,
+  ): Promise<MemorySearchResult> {
     if (!this.client) throw new Error("Database not initialized");
 
-    let query = "SELECT id, text, metadata, created_at, updated_at, access_count, last_accessed_at FROM memories";
-    const values: any[] = [];
+    let query =
+      "SELECT id, text, metadata, created_at, updated_at, access_count, last_accessed_at FROM memories";
+    const values: unknown[] = [];
     const conditions: string[] = [];
     let paramIndex = 1;
 
@@ -246,11 +292,14 @@ export class PgVectorDatabase implements StoragePort {
 
     // Add ORDER BY
     if (params.sortBy === "date") {
-      query += " ORDER BY created_at " + (params.sortOrder === "asc" ? "ASC" : "DESC");
+      query += " ORDER BY created_at " +
+        (params.sortOrder === "asc" ? "ASC" : "DESC");
     } else if (params.sortBy === "access") {
-      query += " ORDER BY access_count " + (params.sortOrder === "asc" ? "ASC" : "DESC");
+      query += " ORDER BY access_count " +
+        (params.sortOrder === "asc" ? "ASC" : "DESC");
     } else if (params.sortBy === "priority") {
-      query += " ORDER BY (metadata->>'priority')::integer " + (params.sortOrder === "asc" ? "ASC" : "DESC");
+      query += " ORDER BY (metadata->>'priority')::integer " +
+        (params.sortOrder === "asc" ? "ASC" : "DESC");
     } else if (params.query?.trim()) {
       query += " ORDER BY similarity DESC";
     }
@@ -268,59 +317,64 @@ export class PgVectorDatabase implements StoragePort {
       paramIndex++;
     }
 
-    const result = await this.client.queryObject(query, values);
+    const result = await this.client.queryObject<MemoryRow>(query, values);
 
-    const memories: MemoryChunk[] = result.rows.map(row => {
-      const r = row as any;
-      return {
-        id: r.id,
-        text: r.text,
-        metadata: JSON.parse(r.metadata),
-        createdAt: new Date(r.created_at),
-        updatedAt: new Date(r.updated_at),
-        accessCount: r.access_count,
-        lastAccessedAt: new Date(r.last_accessed_at),
-      };
-    });
+    const memories: MemoryChunk[] = result.rows.map((row) => ({
+      id: row.id,
+      text: row.text,
+      metadata: JSON.parse(row.metadata),
+      createdAt: new Date(row.created_at),
+      updatedAt: new Date(row.updated_at),
+      accessCount: row.access_count,
+      lastAccessedAt: new Date(row.last_accessed_at),
+    }));
 
     // Get total count for pagination
-    const countQuery = query.replace(/SELECT.*?FROM/, "SELECT COUNT(*) as total FROM")
-                           .replace(/ORDER BY.*/, "");
+    const countQuery = query.replace(
+      /SELECT.*?FROM/,
+      "SELECT COUNT(*) as total FROM",
+    )
+      .replace(/ORDER BY.*/, "");
     const countValues = values.slice(0, -2); // Remove LIMIT/OFFSET values
-    const countResult = await this.client.queryObject(countQuery, countValues);
-    const total = (countResult.rows[0] as any).total;
+    const countResult = await this.client.queryObject<{ total: number }>(
+      countQuery,
+      countValues,
+    );
+    const total = countResult.rows[0].total;
 
     return {
       memories,
       total,
-      hasMore: params.offset ? (params.offset + memories.length) < total : memories.length < total,
+      hasMore: params.offset
+        ? (params.offset + memories.length) < total
+        : memories.length < total,
     };
   }
 
   async getAllTags(): Promise<readonly string[]> {
     if (!this.client) throw new Error("Database not initialized");
 
-    const result = await this.client.queryObject(`
+    const result = await this.client.queryObject<{ tag: string }>(`
       SELECT DISTINCT jsonb_array_elements_text(metadata->'tags') as tag
       FROM memories
       WHERE metadata->'tags' IS NOT NULL
       ORDER BY tag
     `);
 
-    return result.rows.map(row => (row as any).tag);
+    return result.rows.map((row) => row.tag);
   }
 
   async getAllCategories(): Promise<readonly string[]> {
     if (!this.client) throw new Error("Database not initialized");
 
-    const result = await this.client.queryObject(`
+    const result = await this.client.queryObject<{ category: string }>(`
       SELECT DISTINCT metadata->>'category' as category
       FROM memories
       WHERE metadata->>'category' IS NOT NULL
       ORDER BY category
     `);
 
-    return result.rows.map(row => (row as any).category);
+    return result.rows.map((row) => row.category);
   }
 
   async deleteMemory(id: string): Promise<boolean> {
@@ -328,7 +382,7 @@ export class PgVectorDatabase implements StoragePort {
 
     const result = await this.client.queryObject(
       "DELETE FROM memories WHERE id = $1",
-      [id]
+      [id],
     );
 
     return result.rowCount !== undefined && result.rowCount > 0;
@@ -343,15 +397,21 @@ export class PgVectorDatabase implements StoragePort {
   }> {
     if (!this.client) throw new Error("Database not initialized");
 
-    const result = await this.client.queryObject(`
+    const result = await this.client.queryObject<{
+      total_memories: string;
+      oldest_memory: string | null;
+      newest_memory: string | null;
+    }>(
+      `
       SELECT
         COUNT(*) as total_memories,
         MIN(created_at) as oldest_memory,
         MAX(created_at) as newest_memory
       FROM memories
-    `);
+    `,
+    );
 
-    const row = result.rows[0] as any;
+    const row = result.rows[0];
     const tags = await this.getAllTags();
     const categories = await this.getAllCategories();
 
@@ -369,14 +429,17 @@ export class PgVectorDatabase implements StoragePort {
 
     if (!maxMemories) return 0;
 
-    const result = await this.client.queryObject(`
+    const result = await this.client.queryObject(
+      `
       DELETE FROM memories
       WHERE id IN (
         SELECT id FROM memories
         ORDER BY created_at ASC
         LIMIT GREATEST(0, (SELECT COUNT(*) FROM memories) - $1)
       )
-    `, [maxMemories]);
+    `,
+      [maxMemories],
+    );
 
     return result.rowCount || 0;
   }
@@ -401,7 +464,9 @@ export class PgVectorDatabase implements StoragePort {
     }
 
     // Normalize
-    const magnitude = Math.sqrt(embedding.reduce((sum, val) => sum + val * val, 0));
+    const magnitude = Math.sqrt(
+      embedding.reduce((sum, val) => sum + val * val, 0),
+    );
     if (magnitude > 0) {
       for (let i = 0; i < embedding.length; i++) {
         embedding[i] /= magnitude;

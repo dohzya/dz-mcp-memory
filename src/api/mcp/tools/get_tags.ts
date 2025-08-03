@@ -7,7 +7,9 @@ import type { MemoryService } from "../../../core/services/memory_service.ts";
  * MCP tool for getting all available tags
  */
 export function createGetTagsTool(memoryService: MemoryService): ToolHandler {
-  return async (params: Record<string, unknown>): Promise<Record<string, unknown>> => {
+  return async (
+    params: Record<string, unknown>,
+  ): Promise<Record<string, unknown>> => {
     try {
       // Validate that no parameters are provided
       if (Object.keys(params).length > 0) {
@@ -29,4 +31,4 @@ export function createGetTagsTool(memoryService: MemoryService): ToolHandler {
       throw error;
     }
   };
-} 
+}

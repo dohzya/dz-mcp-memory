@@ -136,4 +136,4 @@ export const ReorganizeParamsSchema = z.object({
   cleanupOldMemories: z.boolean().optional(),
   optimizeStorage: z.boolean().optional(),
   maxMemories: z.number().min(1).optional(),
-}); 
+});

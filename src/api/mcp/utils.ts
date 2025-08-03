@@ -1,6 +1,15 @@
 import { z } from "zod";
-import type { MCPRequest, MCPResponse, MCPErrorResponse } from "../types/mcp.ts";
-import { MCPRequestSchema, DomainError, ValidationError, AuthenticationError } from "../types/mcp.ts";
+import type {
+  MCPErrorResponse,
+  MCPRequest,
+  MCPResponse,
+} from "../types/mcp.ts";
+import {
+  AuthenticationError,
+  DomainError,
+  MCPRequestSchema,
+  ValidationError,
+} from "../types/mcp.ts";
 import * as log from "@std/log";
 
 /**
@@ -23,7 +32,10 @@ export function validateMCPRequest(request: unknown): MCPRequest {
 /**
  * Create MCP error response
  */
-export function createErrorResponse(id: string, error: DomainError): MCPErrorResponse {
+export function createErrorResponse(
+  id: string,
+  error: DomainError,
+): MCPErrorResponse {
   return {
     id,
     error: {
@@ -37,7 +49,10 @@ export function createErrorResponse(id: string, error: DomainError): MCPErrorRes
 /**
  * Create MCP success response
  */
-export function createSuccessResponse(id: string, result: Record<string, unknown>): MCPResponse {
+export function createSuccessResponse(
+  id: string,
+  result: Record<string, unknown>,
+): MCPResponse {
   return {
     id,
     result,
@@ -47,7 +62,10 @@ export function createSuccessResponse(id: string, result: Record<string, unknown
 /**
  * Validate authentication token
  */
-export function validateAuthToken(authHeader: string | null, expectedToken: string): void {
+export function validateAuthToken(
+  authHeader: string | null,
+  expectedToken: string,
+): void {
   if (!authHeader) {
     throw new AuthenticationError("Missing Authorization header");
   }
@@ -137,7 +155,7 @@ export function parseSearchParams(params: Record<string, unknown>): {
   }
 
   if (Array.isArray(params.tags)) {
-    result.tags = params.tags.filter(tag => typeof tag === "string");
+    result.tags = params.tags.filter((tag) => typeof tag === "string");
   }
 
   if (typeof params.category === "string") {
@@ -189,7 +207,9 @@ export function parseMemorizeParams(params: Record<string, unknown>): {
   readonly category?: string;
 } {
   if (typeof params.text !== "string" || !params.text.trim()) {
-    throw new ValidationError("Text parameter is required and must be a non-empty string");
+    throw new ValidationError(
+      "Text parameter is required and must be a non-empty string",
+    );
   }
 
   const result = {
@@ -204,7 +224,7 @@ export function parseMemorizeParams(params: Record<string, unknown>): {
   };
 
   if (Array.isArray(params.tags)) {
-    result.tags = params.tags.filter(tag => typeof tag === "string");
+    result.tags = params.tags.filter((tag) => typeof tag === "string");
   }
 
   if (typeof params.context === "string") {

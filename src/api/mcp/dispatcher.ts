@@ -1,5 +1,11 @@
-import type { ToolRegistry, MCPResponse } from "./types.ts";
-import { validateMCPRequest, createErrorResponse, createSuccessResponse, logMCPRequest, logMCPResponse } from "./utils.ts";
+import type { MCPResponse, ToolRegistry } from "./types.ts";
+import {
+  createErrorResponse,
+  createSuccessResponse,
+  logMCPRequest,
+  logMCPResponse,
+  validateMCPRequest,
+} from "./utils.ts";
 import { DomainError } from "./types.ts";
 import * as log from "@std/log";
 
@@ -23,7 +29,10 @@ export class MCPDispatcher {
       // Check if tool exists
       const toolHandler = this.tools[mcpRequest.tool];
       if (!toolHandler) {
-        const error = new DomainError("UNKNOWN_TOOL", `Unknown tool: ${mcpRequest.tool}`);
+        const error = new DomainError(
+          "UNKNOWN_TOOL",
+          `Unknown tool: ${mcpRequest.tool}`,
+        );
         return createErrorResponse(mcpRequest.id, error);
       }
 
@@ -38,16 +47,23 @@ export class MCPDispatcher {
 
       return response;
     } catch (error) {
-      log.error("MCP request processing failed", { error: (error as Error).message });
+      log.error("MCP request processing failed", {
+        error: (error as Error).message,
+      });
 
       // Convert to MCP error response
       const domainError = error instanceof DomainError
         ? error
         : new DomainError("INTERNAL_ERROR", "Internal server error");
 
+      const requestId =
+        typeof request === "object" && request !== null && "id" in request
+          ? (request as { id: string }).id
+          : "unknown";
+
       const response = createErrorResponse(
-        (request as any)?.id || "unknown",
-        domainError
+        requestId,
+        domainError,
       );
 
       logMCPResponse(response);

@@ -1,8 +1,12 @@
 import * as log from "@std/log";
-import { Database as SqliteDatabase } from "sqlite3";
+import { Database as SqliteDB } from "sqlite3";
 
 import type { StoragePort } from "../core/ports/storage_port.ts";
-import type { MemoryChunk, MemorySearchParams, MemorySearchResult } from "../core/models/memory.ts";
+import type {
+  MemoryChunk,
+  MemorySearchParams,
+  MemorySearchResult,
+} from "../core/models/memory.ts";
 import type { DatabaseConfig } from "./index.ts";
 
 /**
@@ -10,11 +14,12 @@ import type { DatabaseConfig } from "./index.ts";
  * Uses FTS (Full Text Search) for semantic search simulation
  */
 export class SqliteDatabase implements StoragePort {
-  private db: SqliteDatabase | null = null;
+  private db: SqliteDB | null = null;
   private nextId = 1;
 
   constructor(private readonly config: DatabaseConfig) {}
 
+  // deno-lint-ignore require-await
   async initialize(): Promise<void> {
     const dbPath = this.config.databasePath || "./memory.db";
     log.info("Initializing SQLite database", { dbPath });
@@ -66,6 +71,7 @@ export class SqliteDatabase implements StoragePort {
     log.info("SQLite database initialized");
   }
 
+  // deno-lint-ignore require-await
   async close(): Promise<void> {
     if (this.db) {
       this.db.close();
@@ -74,7 +80,13 @@ export class SqliteDatabase implements StoragePort {
     }
   }
 
-  async storeMemory(memory: Omit<MemoryChunk, "id" | "createdAt" | "updatedAt" | "accessCount" | "lastAccessedAt">): Promise<MemoryChunk> {
+  // deno-lint-ignore require-await
+  async storeMemory(
+    memory: Omit<
+      MemoryChunk,
+      "id" | "createdAt" | "updatedAt" | "accessCount" | "lastAccessedAt"
+    >,
+  ): Promise<MemoryChunk> {
     if (!this.db) throw new Error("Database not initialized");
 
     const now = new Date();
@@ -102,7 +114,7 @@ export class SqliteDatabase implements StoragePort {
       now.getTime(),
       now.getTime(),
       0,
-      now.getTime()
+      now.getTime(),
     );
 
     log.info("Stored memory in SQLite", { id, textLength: memory.text.length });
@@ -110,6 +122,7 @@ export class SqliteDatabase implements StoragePort {
     return newMemory;
   }
 
+  // deno-lint-ignore require-await
   async getMemory(id: string): Promise<MemoryChunk | undefined> {
     if (!this.db) throw new Error("Database not initialized");
 
@@ -119,7 +132,15 @@ export class SqliteDatabase implements StoragePort {
       WHERE id = ?
     `);
 
-    const row = stmt.get(id) as any;
+    const row = stmt.get(id) as {
+      id: string;
+      text: string;
+      metadata: string;
+      created_at: number;
+      updated_at: number;
+      access_count: number;
+      last_accessed_at: number;
+    } | undefined;
     if (!row) return undefined;
 
     // Update access statistics
@@ -141,7 +162,10 @@ export class SqliteDatabase implements StoragePort {
     };
   }
 
-  async updateMemory(id: string, updates: Partial<MemoryChunk>): Promise<MemoryChunk | undefined> {
+  async updateMemory(
+    id: string,
+    updates: Partial<MemoryChunk>,
+  ): Promise<MemoryChunk | undefined> {
     if (!this.db) throw new Error("Database not initialized");
 
     const current = await this.getMemory(id);
@@ -165,17 +189,21 @@ export class SqliteDatabase implements StoragePort {
       updated.updatedAt.getTime(),
       updated.accessCount,
       updated.lastAccessedAt.getTime(),
-      id
+      id,
     );
 
     return updated;
   }
 
-  async searchMemories(params: MemorySearchParams): Promise<MemorySearchResult> {
+  // deno-lint-ignore require-await
+  async searchMemories(
+    params: MemorySearchParams,
+  ): Promise<MemorySearchResult> {
     if (!this.db) throw new Error("Database not initialized");
 
-    let query = "SELECT m.id, m.text, m.metadata, m.created_at, m.updated_at, m.access_count, m.last_accessed_at FROM memories m";
-    const queryParams: any[] = [];
+    let query =
+      "SELECT m.id, m.text, m.metadata, m.created_at, m.updated_at, m.access_count, m.last_accessed_at FROM memories m";
+    const queryParams: (string | number)[] = [];
     const conditions: string[] = [];
 
     // FTS search if query provided
@@ -222,11 +250,14 @@ export class SqliteDatabase implements StoragePort {
 
     // Add ORDER BY
     if (params.sortBy === "date") {
-      query += " ORDER BY m.created_at " + (params.sortOrder === "asc" ? "ASC" : "DESC");
+      query += " ORDER BY m.created_at " +
+        (params.sortOrder === "asc" ? "ASC" : "DESC");
     } else if (params.sortBy === "access") {
-      query += " ORDER BY m.access_count " + (params.sortOrder === "asc" ? "ASC" : "DESC");
+      query += " ORDER BY m.access_count " +
+        (params.sortOrder === "asc" ? "ASC" : "DESC");
     } else if (params.sortBy === "priority") {
-      query += " ORDER BY JSON_EXTRACT(m.metadata, '$.priority') " + (params.sortOrder === "asc" ? "ASC" : "DESC");
+      query += " ORDER BY JSON_EXTRACT(m.metadata, '$.priority') " +
+        (params.sortOrder === "asc" ? "ASC" : "DESC");
     } else if (params.query) {
       query += " ORDER BY fts.rank";
     }
@@ -243,9 +274,17 @@ export class SqliteDatabase implements StoragePort {
     }
 
     const stmt = this.db.prepare(query);
-    const rows = stmt.all(...queryParams) as any[];
+    const rows = stmt.all(...queryParams) as Array<{
+      id: string;
+      text: string;
+      metadata: string;
+      created_at: number;
+      updated_at: number;
+      access_count: number;
+      last_accessed_at: number;
+    }>;
 
-    const memories: MemoryChunk[] = rows.map(row => ({
+    const memories: MemoryChunk[] = rows.map((row) => ({
       id: row.id,
       text: row.text,
       metadata: JSON.parse(row.metadata),
@@ -256,23 +295,31 @@ export class SqliteDatabase implements StoragePort {
     }));
 
     // Get total count for pagination
-    const countQuery = query.replace(/SELECT.*?FROM/, "SELECT COUNT(*) as total FROM").replace(/ORDER BY.*/, "");
+    const countQuery = query.replace(
+      /SELECT.*?FROM/,
+      "SELECT COUNT(*) as total FROM",
+    ).replace(/ORDER BY.*/, "");
     const countStmt = this.db.prepare(countQuery);
-    const countResult = countStmt.get(...queryParams.slice(0, -2)) as any; // Remove LIMIT/OFFSET params
+    const countResult = countStmt.get(
+      ...queryParams.slice(0, -2),
+    ) as { total: number } | undefined; // Remove LIMIT/OFFSET params
     const total = countResult?.total || 0;
 
     return {
       memories,
       total,
-      hasMore: params.offset ? (params.offset + memories.length) < total : memories.length < total,
+      hasMore: params.offset
+        ? (params.offset + memories.length) < total
+        : memories.length < total,
     };
   }
 
+  // deno-lint-ignore require-await
   async getAllTags(): Promise<readonly string[]> {
     if (!this.db) throw new Error("Database not initialized");
 
     const stmt = this.db.prepare("SELECT DISTINCT metadata FROM memories");
-    const rows = stmt.all() as any[];
+    const rows = stmt.all() as Array<{ metadata: string }>;
 
     const tags = new Set<string>();
     for (const row of rows) {
@@ -289,15 +336,19 @@ export class SqliteDatabase implements StoragePort {
     return Array.from(tags).sort();
   }
 
+  // deno-lint-ignore require-await
   async getAllCategories(): Promise<readonly string[]> {
     if (!this.db) throw new Error("Database not initialized");
 
-    const stmt = this.db.prepare("SELECT DISTINCT JSON_EXTRACT(metadata, '$.category') as category FROM memories WHERE category IS NOT NULL");
-    const rows = stmt.all() as any[];
+    const stmt = this.db.prepare(
+      "SELECT DISTINCT JSON_EXTRACT(metadata, '$.category') as category FROM memories WHERE category IS NOT NULL",
+    );
+    const rows = stmt.all() as Array<{ category: string | null }>;
 
-    return rows.map(row => row.category).filter(Boolean).sort();
+    return rows.map((row) => row.category).filter(Boolean).sort();
   }
 
+  // deno-lint-ignore require-await
   async deleteMemory(id: string): Promise<boolean> {
     if (!this.db) throw new Error("Database not initialized");
 
@@ -317,10 +368,15 @@ export class SqliteDatabase implements StoragePort {
     if (!this.db) throw new Error("Database not initialized");
 
     const totalStmt = this.db.prepare("SELECT COUNT(*) as total FROM memories");
-    const totalResult = totalStmt.get() as any;
+    const totalResult = totalStmt.get() as { total: number } | undefined;
 
-    const datesStmt = this.db.prepare("SELECT MIN(created_at) as oldest, MAX(created_at) as newest FROM memories");
-    const datesResult = datesStmt.get() as any;
+    const datesStmt = this.db.prepare(
+      "SELECT MIN(created_at) as oldest, MAX(created_at) as newest FROM memories",
+    );
+    const datesResult = datesStmt.get() as {
+      oldest: number | null;
+      newest: number | null;
+    } | undefined;
 
     const tags = await this.getAllTags();
     const categories = await this.getAllCategories();
@@ -334,6 +390,7 @@ export class SqliteDatabase implements StoragePort {
     };
   }
 
+  // deno-lint-ignore require-await
   async cleanup(maxMemories?: number): Promise<number> {
     if (!this.db) throw new Error("Database not initialized");
 

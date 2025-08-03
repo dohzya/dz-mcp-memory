@@ -10,12 +10,14 @@ import type { MemoryChunk } from "../../../core/models/memory.ts";
  * Supports semantic search, filtering, and pagination
  */
 export function createListTool(memoryService: MemoryService): ToolHandler {
-  return async (params: Record<string, unknown>): Promise<Record<string, unknown>> => {
+  return async (
+    params: Record<string, unknown>,
+  ): Promise<Record<string, unknown>> => {
     try {
       // Parse and validate search parameters
       const searchParams = parseSearchParams(params);
-      
-      log.info("Searching memories", { 
+
+      log.info("Searching memories", {
         query: searchParams.query,
         tags: searchParams.tags?.length || 0,
         category: searchParams.category,
@@ -27,11 +29,11 @@ export function createListTool(memoryService: MemoryService): ToolHandler {
       const result = await memoryService.searchMemories(searchParams);
 
       // Serialize memories for response
-      const serializedMemories = result.memories.map((memory: MemoryChunk) => 
+      const serializedMemories = result.memories.map((memory: MemoryChunk) =>
         serializeMemoryChunk(memory)
       );
 
-      log.info("Search completed", { 
+      log.info("Search completed", {
         found: result.memories.length,
         total: result.total,
         hasMore: result.hasMore,
@@ -47,4 +49,4 @@ export function createListTool(memoryService: MemoryService): ToolHandler {
       throw error;
     }
   };
-} 
+}

@@ -1,5 +1,14 @@
-import type { MCPRequest, MCPErrorResponse, MCPSuccessResponse, MCPResponse } from "../types/mcp.ts";
-import type { MemoryChunk, MemorySearchParams, ReorganizeParams } from "../../core/models/memory.ts";
+import type {
+  MCPErrorResponse,
+  MCPRequest,
+  MCPResponse,
+  MCPSuccessResponse,
+} from "../types/mcp.ts";
+import type {
+  MemoryChunk,
+  MemorySearchParams,
+  ReorganizeParams,
+} from "../../core/models/memory.ts";
 
 // Re-export types from base MCP types
 export type { MCPResponse };
@@ -14,7 +23,9 @@ export class ValidationError extends Error {
 
 export class NotFoundError extends Error {
   constructor(resource: string, id?: string) {
-    const message = id ? `${resource} not found: ${id}` : `${resource} not found`;
+    const message = id
+      ? `${resource} not found: ${id}`
+      : `${resource} not found`;
     super(message);
     this.name = "NotFoundError";
   }
@@ -23,7 +34,9 @@ export class NotFoundError extends Error {
 /**
  * MCP tool handler function type
  */
-export type ToolHandler = (params: Record<string, unknown>) => Promise<Record<string, unknown>>;
+export type ToolHandler = (
+  params: Record<string, unknown>,
+) => Promise<Record<string, unknown>>;
 
 /**
  * Tool registry mapping tool names to handlers
@@ -35,14 +48,16 @@ export interface ToolRegistry {
 /**
  * MCP request with typed parameters
  */
-export interface TypedMCPRequest<T = Record<string, unknown>> extends Omit<MCPRequest, "params"> {
+export interface TypedMCPRequest<T = Record<string, unknown>>
+  extends Omit<MCPRequest, "params"> {
   readonly params: T;
 }
 
 /**
  * Specific request types for each tool
  */
-export interface MemorizeRequest extends TypedMCPRequest<{ readonly memoryChunks: MemoryChunk[] }> {
+export interface MemorizeRequest
+  extends TypedMCPRequest<{ readonly memoryChunks: MemoryChunk[] }> {
   readonly tool: "memorize";
 }
 
@@ -54,7 +69,8 @@ export interface ReorganizeRequest extends TypedMCPRequest<ReorganizeParams> {
   readonly tool: "reorganize";
 }
 
-export interface GetMemoryRequest extends TypedMCPRequest<{ readonly id: string }> {
+export interface GetMemoryRequest
+  extends TypedMCPRequest<{ readonly id: string }> {
   readonly tool: "get_memory";
 }
 
@@ -62,11 +78,13 @@ export interface GetTagsRequest extends TypedMCPRequest<Record<string, never>> {
   readonly tool: "get_tags";
 }
 
-export interface GetCategoriesRequest extends TypedMCPRequest<Record<string, never>> {
+export interface GetCategoriesRequest
+  extends TypedMCPRequest<Record<string, never>> {
   readonly tool: "get_categories";
 }
 
-export interface GetStatsRequest extends TypedMCPRequest<Record<string, never>> {
+export interface GetStatsRequest
+  extends TypedMCPRequest<Record<string, never>> {
   readonly tool: "get_stats";
 }
 
@@ -182,4 +200,6 @@ export type TypedMCPSuccessResponseUnion =
 /**
  * Union type for all possible MCP responses
  */
-export type TypedMCPResponseUnion = TypedMCPSuccessResponseUnion | MCPErrorResponse;
+export type TypedMCPResponseUnion =
+  | TypedMCPSuccessResponseUnion
+  | MCPErrorResponse;

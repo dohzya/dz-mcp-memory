@@ -9,12 +9,14 @@ import { parseMemorizeParams } from "../utils.ts";
  * Splits text into chunks and stores them with metadata
  */
 export function createMemorizeTool(memoryService: MemoryService): ToolHandler {
-  return async (params: Record<string, unknown>): Promise<Record<string, unknown>> => {
+  return async (
+    params: Record<string, unknown>,
+  ): Promise<Record<string, unknown>> => {
     try {
       // Parse and validate parameters
       const memorizeParams = parseMemorizeParams(params);
-      
-      log.info("Memorizing text", { 
+
+      log.info("Memorizing text", {
         textLength: memorizeParams.text.length,
         tags: memorizeParams.tags?.length || 0,
         category: memorizeParams.category,
@@ -23,7 +25,7 @@ export function createMemorizeTool(memoryService: MemoryService): ToolHandler {
       // Process memorization
       const result = await memoryService.memorize(memorizeParams);
 
-      log.info("Memorization completed", { 
+      log.info("Memorization completed", {
         memoryIds: result.memoryIds.length,
         chunksCreated: result.chunksCreated,
       });
@@ -38,4 +40,4 @@ export function createMemorizeTool(memoryService: MemoryService): ToolHandler {
       throw error;
     }
   };
-} 
+}
