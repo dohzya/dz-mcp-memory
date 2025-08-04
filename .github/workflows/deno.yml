@@ -15,18 +15,13 @@ concurrency:
 
 jobs:
   test:
-    strategy:
-      matrix:
-        os: [ubuntu-latest]
-        deno: [v2.x]
-    runs-on: ${{ matrix.os }}
+    runs-on: ubuntu-latest
 
     steps:
       - uses: actions/checkout@v4
 
-      - uses: denoland/setup-deno@v2
+      - uses: jdx/mise-action@v2
         with:
-          deno-version: ${{ matrix.deno }}
           cache: true
 
       - run: deno lint
