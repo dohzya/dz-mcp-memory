@@ -55,15 +55,20 @@ export class ReorganizerService {
    */
   private async mergeSimilarTags(): Promise<number> {
     const allTags = await this.db.getAllTags();
-    const mergedCount = 0;
+    let mergedCount = 0;
 
     // Group similar tags by similarity
     const tagGroups = this.groupSimilarTags(allTags);
 
+    if (tagGroups.length === 0) {
+      return 0;
+    }
+
+    const stats = await this.db.getStats();
+
     for (const group of tagGroups) {
       if (group.length <= 1) continue;
 
-      // Use the most common tag as the primary tag
       const primaryTag = this.selectPrimaryTag(group);
       const secondaryTags = group.filter((tag) => tag !== primaryTag);
 
@@ -72,9 +77,25 @@ export class ReorganizerService {
         secondary: secondaryTags,
       });
 
-      // TODO: Update all memories that use secondary tags to use primary tag
-      // This would require updating the database interface to support bulk updates
-      // For now, we just log the merge operation
+      for (const tag of secondaryTags) {
+        const { memories } = await this.db.searchMemories({
+          tags: [tag],
+          limit: stats.totalMemories || 1000,
+        });
+
+        for (const memory of memories) {
+          const tags = new Set(memory.metadata.tags);
+          if (tags.has(tag)) {
+            tags.delete(tag);
+            tags.add(primaryTag);
+            await this.db.updateMemory(memory.id, {
+              metadata: { ...memory.metadata, tags: Array.from(tags) },
+            });
+          }
+        }
+      }
+
+      mergedCount += secondaryTags.length;
     }
 
     return mergedCount;
