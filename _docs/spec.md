@@ -93,6 +93,9 @@ mcp-dz-memory/
 └── README.md
 ```
 
+La CLI invoque directement les services du domaine ; elle ne transite pas par le
+dispatcher MCP qui reste strictement confiné à `api/mcp/`.
+
 ### Architecture Principles
 
 - **Hexagonal (Ports & Adapters)** :

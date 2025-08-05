@@ -1,9 +1,8 @@
 import type {
   MCPErrorResponse,
   MCPRequest,
-  MCPResponse,
   MCPSuccessResponse,
-} from "../types/mcp.ts";
+} from "./base.ts";
 import type {
   MemoryChunk,
   MemorySearchParams,
@@ -11,8 +10,8 @@ import type {
 } from "../../core/models/memory.ts";
 
 // Re-export types from base MCP types
-export type { MCPResponse };
-export { DomainError } from "../types/mcp.ts";
+export type { MCPResponse } from "./base.ts";
+export { DomainError } from "./base.ts";
 
 export class ValidationError extends Error {
   constructor(message: string) {
