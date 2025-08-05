@@ -1,15 +1,11 @@
 import { z } from "zod";
-import type {
-  MCPErrorResponse,
-  MCPRequest,
-  MCPResponse,
-} from "../types/mcp.ts";
+import type { MCPErrorResponse, MCPRequest, MCPResponse } from "./base.ts";
 import {
   AuthenticationError,
   DomainError,
   MCPRequestSchema,
   ValidationError,
-} from "../types/mcp.ts";
+} from "./base.ts";
 import * as log from "@std/log";
 
 /**
